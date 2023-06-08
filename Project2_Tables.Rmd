@@ -1,0 +1,51 @@
+---
+title: "Project2 tables"
+author: "Ronald Chao"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE}
+
+library(MASS)
+library(corrplot)
+library(leaps)
+library(knitr)
+
+dat <- read.csv("C:\\Users\\ronal\\Desktop\\resume projects\\Project 2\\project2\\SP21_P2_782362.csv")
+
+stepwise_reg <- function(model, method, title) {
+  M <- regsubsets(model.matrix(model)[,-1], model.frame(model)$Y,
+                   nbest = 1 , nvmax=6, 
+                   method = method, intercept = TRUE )
+  temp <- summary(M)
+  Var <- colnames(model.matrix(model))
+  M_select <- apply(temp$which, 1, 
+                    function(x) paste0(Var[x], collapse='+'))
+  kable(data.frame(cbind(model = M_select, adjR2 = round(temp$adjr2, 4), BIC = round(temp$bic, 4))),
+        caption=paste(title, ", method:", method), "pipe")
+}
+
+
+
+model1 <- lm(Y~., data=dat)
+stepwise_reg(model1, 'forward', 'Model: Y~.')
+stepwise_reg(model1, 'backward', 'Model: Y~.')
+
+model2 <- lm(Y ~ .^2, data = dat)
+stepwise_reg(model2, 'forward', 'Model: Y~.^2')
+stepwise_reg(model2, 'backward', 'Model: Y~.^2')
+
+model1_trans <- lm(Y^2 ~ ., data=dat)
+stepwise_reg(model1_trans, 'forward', 'Model: Y^2~.')
+stepwise_reg(model1_trans, 'backward', 'Model: Y^2~.')
+
+model2_trans <- lm(Y^2 ~ .^2, data=dat)
+stepwise_reg(model2_trans, 'forward', 'Model: Y^2~.^2')
+stepwise_reg(model2_trans, 'backward', 'Model: Y^2~.^2')
+
+```
